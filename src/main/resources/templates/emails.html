@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Job Application Emails</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<h1>Job Application Emails</h1>
+
+<div th:if="${emails.empty}">
+    <p>No job application emails found.</p>
+</div>
+
+<div th:unless="${emails.empty}">
+    <table border="1">
+        <thead>
+        <tr>
+            <th>Subject</th>
+            <th>Snippet</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="email : ${emails}">
+            <td th:text="${email.subject}">Email Subject</td>
+            <td th:text="${email.snippet}">Email Snippet</td>
+            <td>
+                <a th:href="@{'/process-email/' + ${email.id}}">Process</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div>
+    <a href="/dashboard">Back to Dashboard</a>
+</div>
+</body>
+</html>

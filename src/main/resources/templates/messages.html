@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Your Gmail Messages</title>
+  <style>
+    .message {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    .subject {
+        font-weight: bold;
+        font-size: 18px;
+    }
+    .from {
+        color: #666;
+        margin: 5px 0;
+    }
+    .body {
+        margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+<h1>Your Gmail Messages</h1>
+<a href="/">Back to Home</a>
+
+<div id="messages-container">
+  <!-- Messages will be loaded here via JavaScript -->
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      fetch('/api/gmail/messages')
+          .then(response => response.json())
+          .then(messages => {
+              const container = document.getElementById('messages-container');
+
+              if (messages && messages.length > 0) {
+                  messages.forEach(message => {
+                      const subject = getHeaderValue(message.payload.headers, 'Subject') || 'No Subject';
+                      const from = getHeaderValue(message.payload.headers, 'From') || 'Unknown';
+
+                      const messageDiv = document.createElement('div');
+                      messageDiv.className = 'message';
+                      messageDiv.innerHTML = `
+                          <div class="subject">${subject}</div>
+                          <div class="from">From: ${from}</div>
+                          <div class="body">${getMessageBody(message)}</div>
+                      `;
+                      container.appendChild(messageDiv);
+                  });
+              } else {
+                  container.innerHTML = '<p>No messages found</p>';
+              }
+          })
+          .catch(error => {
+              console.error('Error fetching messages:', error);
+              document.getElementById('messages-container').innerHTML =
+                  '<p>Error loading messages. Please try again.</p>';
+          });
+  });
+
+  function getHeaderValue(headers, name) {
+      if (!headers) return null;
+      const header = headers.find(h => h.name === name);
+      return header ? header.value : null;
+  }
+
+  function getMessageBody(message) {
+      if (!message.payload) return 'No content';
+
+      // Try to get plain text part
+      if (message.payload.parts) {
+          for (const part of message.payload.parts) {
+              if (part.mimeType === 'text/plain' && part.body && part.body.data) {
+                  return decodeBase64(part.body.data);
+              }
+          }
+
+          // Try to get HTML part if plain text not found
+          for (const part of message.payload.parts) {
+              if (part.mimeType === 'text/html' && part.body && part.body.data) {
+                  return decodeBase64(part.body.data);
+              }
+          }
+      }
+
+      // If no parts, try body directly
+      if (message.payload.body && message.payload.body.data) {
+          return decodeBase64(message.payload.body.data);
+      }
+
+      return 'No content available';
+  }
+
+  function decodeBase64(data) {
+      try {
+          return atob(data.replace(/-/g, '+').replace(/_/g, '/'));
+      } catch (e) {
+          console.error('Error decoding base64:', e);
+          return 'Error decoding message content';
+      }
+  }
+</script>
+</body>
+</html>

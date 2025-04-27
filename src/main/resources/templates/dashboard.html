@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Job Tracker Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .job-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .job-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            color: white;
+        }
+        .status-APPLIED { background-color: #007bff; }
+        .status-INTERVIEW_SCHEDULED { background-color: #17a2b8; }
+        .status-TECHNICAL_ASSESSMENT { background-color: #6c757d; }
+        .status-REJECTED { background-color: #dc3545; }
+        .status-OFFER_RECEIVED { background-color: #28a745; }
+        .status-ACCEPTED { background-color: #20c997; }
+        .status-WITHDRAWN { background-color: #6c757d; }
+        .status-NO_RESPONSE { background-color: #ffc107; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Job Application Dashboard</h1>
+    <div>
+        <a href="/messages" class="btn">View Gmail Messages</a>
+        <form action="/logout" method="post" style="display: inline-block;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button type="submit">Logout</button>
+        </form>
+    </div>
+</div>
+
+<div id="job-applications" class="job-grid">
+    <!-- Jobs will be loaded here via JavaScript -->
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadJobApplications();
+    });
+
+    function loadJobApplications() {
+        fetch('/api/applications')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch job applications');
+                }
+                return response.json();
+            })
+            .then(applications => {
+                const container = document.getElementById('job-applications');
+                if (applications && applications.length > 0) {
+                    applications.forEach(job => {
+                        const jobCard = createJobCard(job);
+                        container.appendChild(jobCard);
+                    });
+                } else {
+                    container.innerHTML = '<p>No job applications found. Try syncing with Gmail.</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading job applications:', error);
+                document.getElementById('job-applications').innerHTML =
+                    '<p>Error loading job applications. Please try again.</p>';
+            });
+    }
+
+    function createJobCard(job) {
+        const div = document.createElement('div');
+        div.className = 'job-card';
+        div.innerHTML = `
+            <h3>${job.jobTitle || 'Unnamed Position'}</h3>
+            <p><strong>Company:</strong> ${job.companyName || 'Unknown'}</p>
+            <p><strong>Status:</strong> <span class="status status-${job.status}">${formatStatus(job.status)}</span></p>
+            <p><strong>Applied:</strong> ${formatDate(job.appliedDate)}</p>
+            <p><strong>Last Updated:</strong> ${formatDate(job.lastUpdated)}</p>
+            ${job.notes ? `<p><strong>Notes:</strong> ${job.notes}</p>` : ''}
+            <button onclick="editJob(${job.id})">Edit</button>
+        `;
+        return div;
+    }
+
+    function formatStatus(status) {
+        if (!status) return 'Unknown';
+        return status.replace(/_/g, ' ');
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return 'Unknown';
+        const date = new Date(dateString);
+        return date.toLocaleDateString();
+    }
+
+    function editJob(id) {
+        // Implement job editing functionality
+        console.log(`Edit job ${id}`);
+        // This would typically open a modal or navigate to an edit page
+    }
+</script>
+</body>
+</html>
