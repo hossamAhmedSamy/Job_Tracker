@@ -10,6 +10,7 @@ import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
+import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -17,6 +18,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.Collections;
 
+@Component
 public class GmailServiceBuilder {
 
     private static final String APPLICATION_NAME = "Gmail API Java Quickstart";

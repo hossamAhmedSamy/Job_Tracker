@@ -22,6 +22,10 @@ public class JobApplication {
     @Column(nullable = false)
     private String status; // (APPLIED, INTERVIEW, REJECTED, etc.)
 
+    @Column(unique = true)
+    private String emailHash;
+
+
     private LocalDate applicationDate;
 
     @ElementCollection
@@ -45,6 +49,15 @@ public class JobApplication {
     public Map<String, String> getKeyDetails() {
         return keyDetails;
     }
+
+    public String getEmailHash() {
+        return emailHash;
+    }
+
+    public void setEmailHash(String emailHash) {
+        this.emailHash = emailHash;
+    }
+
 
     public void setKeyDetails(Map<String, String> keyDetails) {
         this.keyDetails = keyDetails;

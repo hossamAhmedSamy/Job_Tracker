@@ -43,7 +43,7 @@ public class EmailFilter {
         return false;
     }
 
-    private String getSubject(Message message) {
+    String getSubject(Message message) {
         MessagePart payload = message.getPayload();
         if (payload != null && payload.getHeaders() != null) {
             for (MessagePartHeader header : payload.getHeaders()) {
@@ -55,7 +55,7 @@ public class EmailFilter {
         return "";
     }
 
-    private String getEmailBody(Message message) {
+    String getEmailBody(Message message) {
         StringBuilder bodyBuilder = new StringBuilder();
         try {
             MessagePart payload = message.getPayload();
